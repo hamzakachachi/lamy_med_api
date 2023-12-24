@@ -1,4 +1,5 @@
 const uniqid = require('uniqid');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); 
 const Session = require('../model/Session'); 
 const delegueModel = require('../model/Delegue');
@@ -7,12 +8,14 @@ const delegueModel = require('../model/Delegue');
 const auth = async function(req, res) {
     // find the user
     try {
+        console.log(req);
         const user = await delegueModel.findOne({username: req.body.username});
         if (!user) {
             res.json({ success: false, message: 'Authentication failed. User not found.' });
         } else if (user) {
             // check if password matches
-            if (user.password != req.body.password) {
+            const passwordsMatch = await bcrypt.compare(user.password, req.body.password);
+            if (!passwordsMatch) {
                 res.json({ success: false, message: 'Authentication failed. Wrong password.' });
             } else {
                 if (!req.body.deviceId) {
