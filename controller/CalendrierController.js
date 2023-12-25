@@ -51,6 +51,23 @@ const addCalendrier = async (req,res)=>{
     
 }
 
+const addMultiCalendriers = async (req,res)=>{
+    try {
+        
+        if (req.decoded.username === req.params.username) {
+
+            const resultats= await calendrierModel.insertMany([...req.body.events]);
+
+            res.status(200).json(resultats);
+        
+        }else 
+            res.status(403).json({ success: false, message: 'Forbidden' });
+    } catch (error) {
+        res.status(200).json({ success: false, message: error.message });
+    }
+    
+}
+
 
 const updateCalendrier= async (req,res)=>{
     try {
@@ -112,5 +129,5 @@ const deleteCalendrier= async (req,res)=>{
 
 
 module.exports={
-    getAllCalendriers, getOneCalendrier, addCalendrier, updateCalendrier, deleteCalendrier, updateCalendrierStatus
+    getAllCalendriers, getOneCalendrier, addCalendrier, updateCalendrier, deleteCalendrier, updateCalendrierStatus, addMultiCalendriers
 }

@@ -8,13 +8,13 @@ const delegueModel = require('../model/Delegue');
 const auth = async function(req, res) {
     // find the user
     try {
-        console.log(req);
+        console.log(req.body);
         const user = await delegueModel.findOne({username: req.body.username});
         if (!user) {
             res.json({ success: false, message: 'Authentication failed. User not found.' });
         } else if (user) {
             // check if password matches
-            const passwordsMatch = await bcrypt.compare(user.password, req.body.password);
+            const passwordsMatch = await bcrypt.compare(req.body.password, user.password);
             if (!passwordsMatch) {
                 res.json({ success: false, message: 'Authentication failed. Wrong password.' });
             } else {

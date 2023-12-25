@@ -2,6 +2,9 @@ const ProduitModel = require('../model/Produit');
 
 
 const getAllProduits = async (req,res)=>{
+    console.log('====================================');
+    console.log(req.params.username, "produits");
+    console.log('====================================');
     try {
         if (req.decoded.username === req.params.username) {
             const resultats = await ProduitModel.find();
