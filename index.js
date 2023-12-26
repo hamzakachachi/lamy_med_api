@@ -4,7 +4,7 @@ require('dotenv').config();
 const cors=require('cors');
 const db=require(__dirname +"/database/connect");
 // ===========================
-const install = require(__dirname +"/routes/install");
+// const install = require(__dirname +"/routes/install");
 // ==========================================
 const app=express();
 const bodyParser = require('body-parser');

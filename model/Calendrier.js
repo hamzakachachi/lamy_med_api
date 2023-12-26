@@ -60,37 +60,37 @@ CalendrierSchema.index({ medecin: 1, dateVisite: 1 }, { unique: true });
 
 
 
-CalendrierSchema.pre('findOneAndUpdate', async function (next) {
-  console.log(this.getUpdate().$set);
-  try {
-    const productUpdates = this.getUpdate().$set.produitCalendriers.map(async (productData) => {
-      const product = await Product.findById(productData.produit);
-      const oldCl = await this.findById(this.getFilter()._id);
-      if (!product || !oldCl) {
-        throw new Error('Product not found');
-      }
+// CalendrierSchema.pre('findOneAndUpdate', async function (next) {
+//   console.log(this.getUpdate().$set);
+//   try {
+//     const productUpdates = this.getUpdate().$set.produitCalendriers.map(async (productData) => {
+//       const product = await Product.findById(productData.produit);
+//       const oldCl = await this.findById(this.getFilter()._id);
+//       if (!product || !oldCl) {
+//         throw new Error('Product not found');
+//       }
 
-      const thisProdIndex = oldCl.produitCalendriers.findIndex((item) => item.produit === product._id);
-      const realQte = thisProdIndex != -1 ? oldCl.produitCalendriers[thisProdIndex].quantite - this.getUpdate().$set.quantite : this.getUpdate().$set.quantite;
-      // Check if the new quantity in stock will be non-negative
-      if (product.nbStock - realQte < 0) {
-        throw new Error('Vous avez dépassé la quantité en stock pour le produit : ' + product.intitule);
-      }
+//       const thisProdIndex = oldCl.produitCalendriers.findIndex((item) => item.produit === product._id);
+//       const realQte = thisProdIndex != -1 ? oldCl.produitCalendriers[thisProdIndex].quantite - this.getUpdate().$set.quantite : this.getUpdate().$set.quantite;
+//       // Check if the new quantity in stock will be non-negative
+//       if (product.nbStock - realQte < 0) {
+//         throw new Error('Vous avez dépassé la quantité en stock pour le produit : ' + product.intitule);
+//       }
 
-      // Update product stock
-      product.stockQuantity -= realQte;
+//       // Update product stock
+//       product.stockQuantity -= realQte;
 
-      // Save the updated product
-      await product.save();
-    });
+//       // Save the updated product
+//       await product.save();
+//     });
 
-    await Promise.all(productUpdates);
+//     await Promise.all(productUpdates);
 
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+//     next();
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 
 
