@@ -1,7 +1,7 @@
 'use strict';
 
-const calendrierModel = require('../model/Calendrier');
-const DelegueModel = require('../model/Delegue');
+const calendrierModel = require(__dirname +'/../model/Calendrier');
+const DelegueModel = require(__dirname +'/../model/Delegue');
 
 
 const getAllCalendriers = async (req,res)=>{

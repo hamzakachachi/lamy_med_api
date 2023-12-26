@@ -1,5 +1,5 @@
 'use strict';
-const ProduitModel = require('../model/Produit');
+const ProduitModel = require(__dirname +'/../model/Produit');
 
 
 const getAllProduits = async (req,res)=>{

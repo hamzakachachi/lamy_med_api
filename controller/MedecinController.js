@@ -1,7 +1,7 @@
 'use strict';
 
-const MedecinModel = require('../model/Medecin');
-const DelegueModel = require('../model/Delegue');
+const MedecinModel = require(__dirname +'/../model/Medecin');
+const DelegueModel = require(__dirname +'/../model/Delegue');
 
 const getAllMedecins = async (req,res)=>{
     try {

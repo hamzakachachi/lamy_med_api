@@ -1,6 +1,6 @@
 'use strict';
 const mongoose = require('mongoose');
-const Product = require('./Produit');
+const Product = require(__dirname +'/Produit');
 
 const CalendrierSchema = new mongoose.Schema({
   medecin: {

@@ -3,8 +3,8 @@
 const uniqid = require('uniqid');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); 
-const Session = require('../model/Session'); 
-const delegueModel = require('../model/Delegue');
+const Session = require(__dirname +'/../model/Session'); 
+const delegueModel = require(__dirname +'/../model/Delegue');
 
 
 const auth = async function(req, res) {

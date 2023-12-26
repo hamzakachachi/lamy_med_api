@@ -2,7 +2,7 @@ const express=require('express');
 const cron = require('node-cron');
 require('dotenv').config();
 const cors=require('cors');
-const db=require("./database/connect");
+const db=require(__dirname +"/database/connect");
 const app=express();
 const bodyParser = require('body-parser');
 const PORT = process.env.PORT;
@@ -20,19 +20,19 @@ app.use(cors({
   methods:['GET','POST','PUT','DELETE']
 }))
 // auth route
-const authRoute=require('./routes/auth');
+const authRoute=require(__dirname +'/routes/auth');
 app.use("/api/",authRoute);
 
 // auth middleware
-const {verifyToken} = require("./controller/authController");
+const {verifyToken} = require(__dirname +"/controller/authController");
 app.use((req, res, next)=>{
     console.log(req.body);
     verifyToken(req, res, next);
 });
 
 // user route
-const userRoute=require('./routes/web');
-const { updateCalendrierStatus } = require('./controller/CalendrierController');
+const userRoute=require(__dirname +'/routes/web');
+const { updateCalendrierStatus } = require(__dirname +'/controller/CalendrierController');
 app.use("/api/",userRoute);
 
 app.listen(PORT,()=>{

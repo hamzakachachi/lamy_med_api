@@ -1,5 +1,5 @@
 'use strict';
-const DelegueModel = require('../model/Delegue');
+const DelegueModel = require(__dirname +'/../model/Delegue');
 
 
 // const getAll = async (req,res)=>{
