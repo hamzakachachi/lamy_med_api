@@ -1,9 +1,9 @@
 'use strict';
 const express=require("express");
-const { getAllCalendriers, getOneCalendrier, addCalendrier, updateCalendrier, deleteCalendrier, addMultiCalendriers, updateCalendrierDate } = require("../controller/CalendrierController");
-const { getAllMedecins, getOneMedecin, addMedecin, updateMedecin, deleteMedecin } = require("../controller/medecinController");
-const { getAllProduits, getOneProduit, addProduit, updateProduit, deleteProduit } = require("../controller/ProduitController");
-const { getMyInfos } = require("../controller/userController");
+const { getAllCalendriers, getOneCalendrier, addCalendrier, updateCalendrier, deleteCalendrier, addMultiCalendriers, updateCalendrierDate } = require(__dirname +"/../controller/CalendrierController");
+const { getAllMedecins, getOneMedecin, addMedecin, updateMedecin, deleteMedecin } = require(__dirname + "/../controller/medecinController");
+const { getAllProduits, getOneProduit, addProduit, updateProduit, deleteProduit } = require(__dirname + "/../controller/ProduitController");
+const { getMyInfos } = require(__dirname +"/../controller/userController");
 
 const router=express.Router()
 
