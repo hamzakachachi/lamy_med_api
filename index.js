@@ -3,6 +3,9 @@ const cron = require('node-cron');
 require('dotenv').config();
 const cors=require('cors');
 const db=require(__dirname +"/database/connect");
+// ===========================
+const install = require(__dirname +"/routes/install");
+// ==========================================
 const app=express();
 const bodyParser = require('body-parser');
 const PORT = process.env.PORT;
