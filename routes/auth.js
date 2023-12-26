@@ -1,3 +1,5 @@
+'use strict';
+
 const express = require("express");
 const { auth, logout, verifyToken } = require("../controller/authController");
 const router = express.Router();

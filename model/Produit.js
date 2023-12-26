@@ -1,7 +1,7 @@
+'use strict';
 const mongoose = require('mongoose');
 
 const ProduitSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
   intitule: {
     type: String,
     required: true,

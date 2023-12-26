@@ -1,3 +1,5 @@
+'use strict';
+
 const MedecinModel = require('../model/Medecin');
 const DelegueModel = require('../model/Delegue');
 
@@ -32,7 +34,6 @@ const getOneMedecin = async (req,res)=>{
 
 const addMedecin = async (req,res)=>{
     try {
-        
         if (req.decoded.username === req.params.username) {
             const Medecin = new MedecinModel({...req.body});
             const resultats= await Medecin.save();
@@ -51,7 +52,7 @@ const updateMedecin= async (req,res)=>{
     try {
         
         if (req.decoded.username === req.params.username) {
-            const resultats= await MedecinModel.findOneAndUpdate({username:req.params.username, id:req.params.id},{...req.body});
+            const resultats= await MedecinModel.findOneAndUpdate({id:req.params.id},{$set:{...req.body}},{ new: true });
             res.status(200).json(resultats);
         
         }else 

@@ -1,3 +1,4 @@
+'use strict';
 const ProduitModel = require('../model/Produit');
 
 

@@ -26,6 +26,7 @@ app.use("/api/",authRoute);
 // auth middleware
 const {verifyToken} = require("./controller/authController");
 app.use((req, res, next)=>{
+    console.log(req.body);
     verifyToken(req, res, next);
 });
 

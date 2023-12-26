@@ -1,3 +1,5 @@
+'use strict';
+
 const uniqid = require('uniqid');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); 

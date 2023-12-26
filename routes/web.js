@@ -1,5 +1,6 @@
+'use strict';
 const express=require("express");
-const { getAllCalendriers, getOneCalendrier, addCalendrier, updateCalendrier, deleteCalendrier, addMultiCalendriers } = require("../controller/CalendrierController");
+const { getAllCalendriers, getOneCalendrier, addCalendrier, updateCalendrier, deleteCalendrier, addMultiCalendriers, updateCalendrierDate } = require("../controller/CalendrierController");
 const { getAllMedecins, getOneMedecin, addMedecin, updateMedecin, deleteMedecin } = require("../controller/medecinController");
 const { getAllProduits, getOneProduit, addProduit, updateProduit, deleteProduit } = require("../controller/ProduitController");
 const { getMyInfos } = require("../controller/userController");
@@ -11,6 +12,7 @@ router.get('/calendriers/:username', getAllCalendriers);
 router.get('/calendriers/:username/:id', getOneCalendrier);
 router.post('/calendriers/:username', addCalendrier);
 router.put('/calendriers/:username/:id', updateCalendrier);
+router.put('/calendriers/changedate/:username/:id', updateCalendrierDate);
 router.delete('/calendriers/:username/:id', deleteCalendrier);
 router.post('/calendriers/many/:username', addMultiCalendriers);
 // medecin =======================
