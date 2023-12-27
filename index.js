@@ -9,38 +9,40 @@ const db=require(__dirname +"/database/connect");
 // ==========================================
 
 const app=express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 const bodyParser = require('body-parser');
 const PORT = process.env.PORT;
-const SOCKET_PORT = process.env.SOCKET_PORT;
+// const SOCKET_PORT = process.env.SOCKET_PORT;
 
-const { Server } = require("socket.io");
+// const { Server } = require("socket.io");
 
-const io = new Server({
-  cors: {
-    origin : "*",
-    methods:['GET','POST']
-  },
-});
+// const io = new Server({
+//   cors: {
+//     origin : "*",
+//     methods:['GET','POST']
+//   },
+// });
 
-io.on("connection", (socket) => {
-  console.log('====================================');
-  console.log("connection");
-  console.log('====================================');
-  // socket.on("newNotification", ({ senderName, receiverName, type }) => {
-  //   const receiver = getUser(receiverName);
-  //   io.to(receiver.socketId).emit("getNotification", {
-  //     senderName,
-  //     type,
-  //   });
-  // });
+// io.on("connection", (socket) => {
+//   console.log('====================================');
+//   console.log("connection");
+//   console.log('====================================');
+//   // socket.on("newNotification", ({ senderName, receiverName, type }) => {
+//   //   const receiver = getUser(receiverName);
+//   //   io.to(receiver.socketId).emit("getNotification", {
+//   //     senderName,
+//   //     type,
+//   //   });
+//   // });
 
-  socket.on("disconnect", () => {
-    console.log("disconnect");
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log("disconnect");
+//   });
+// });
 
-io.listen(SOCKET_PORT);
-console.log(SOCKET_PORT);
+// io.listen(SOCKET_PORT);
+// console.log(SOCKET_PORT);
 // Content-type: application/json
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -74,9 +76,24 @@ const userRoute=require(__dirname +'/routes/web');
 const { updateCalendrierStatus } = require(__dirname +'/controller/CalendrierController');
 app.use("/api/",userRoute);
 
-app.listen(PORT,()=>{
-    console.log("Le serveur est démaré sur le port "+PORT);
+http.listen(PORT || 3000, function() {
+  var host = http.address().address
+  var port = http.address().port
+  console.log('App listening at https://%s:%s', host, port)
 });
+
+io.on('connection', function(socket) {
+  console.log('Client connected to the WebSocket');
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+
+  // socket.on('chat message', function(msg) {
+  //   console.log("Received a chat message");
+  //   io.emit('chat message', msg);
+  // });
+})
 
 const notificationController = require(__dirname + '/controller/NotificationController');
 notificationController.setIo(io);
