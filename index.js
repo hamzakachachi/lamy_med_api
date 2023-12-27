@@ -11,6 +11,7 @@ const db=require(__dirname +"/database/connect");
 const app=express();
 const bodyParser = require('body-parser');
 const PORT = process.env.PORT;
+const SOCKET_PORT = process.env.SOCKET_PORT;
 
 const { Server } = require("socket.io");
 
@@ -38,7 +39,7 @@ io.on("connection", (socket) => {
   });
 });
 
-io.listen(5000);
+io.listen(SOCKET_PORT);
 // Content-type: application/json
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
