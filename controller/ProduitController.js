@@ -22,7 +22,7 @@ const getAllProduits = async (req,res)=>{
 const getOneProduit = async (req,res)=>{
     try {
         if (req.decoded.username === req.params.username) {
-            const resultats = await ProduitModel.findOne({id:req.params.id});
+            const resultats = await ProduitModel.findOne({_id:req.params.id});
             res.status(200).json(resultats);
         }else 
             res.status(403).json({ success: false, message: 'Forbidden' });
@@ -54,7 +54,7 @@ const updateProduit= async (req,res)=>{
     try {
         
         if (req.decoded.username === req.params.username) {
-            const resultats= await ProduitModel.findOneAndUpdate({id:req.params.id},{...req.body});
+            const resultats= await ProduitModel.findOneAndUpdate({_id:req.params.id},{...req.body});
             res.status(200).json(resultats);
         
         }else 
@@ -70,7 +70,7 @@ const deleteProduit= async (req,res)=>{
     try {
         
         if (req.decoded.username === req.params.username) {
-            const resultats=await ProduitModel.findOneAndDelete({ id:req.params.id});
+            const resultats=await ProduitModel.findOneAndDelete({ _id:req.params.id});
             res.status(200).json(resultats);
         
         }else 

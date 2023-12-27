@@ -1,5 +1,6 @@
 'use strict';
 const express=require("express");
+const { getNotifications } = require(__dirname +"/../controller/NotificationController");
 const { getAllCalendriers, getOneCalendrier, addCalendrier, updateCalendrier, deleteCalendrier, addMultiCalendriers, updateCalendrierDate } = require(__dirname +"/../controller/CalendrierController");
 const { getAllMedecins, getOneMedecin, addMedecin, updateMedecin, deleteMedecin } = require(__dirname + "/../controller/MedecinController");
 const { getAllProduits, getOneProduit, addProduit, updateProduit, deleteProduit } = require(__dirname + "/../controller/ProduitController");
@@ -29,6 +30,7 @@ router.put('/produits/:username/:id', updateProduit);
 router.delete('/produits/:username/:id', deleteProduit);
 // user ============
 router.get('/account/:username', getMyInfos);
+router.get('/notifications/:username', getNotifications);
 
 
 

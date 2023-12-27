@@ -3,12 +3,42 @@ const cron = require('node-cron');
 require('dotenv').config();
 const cors=require('cors');
 const db=require(__dirname +"/database/connect");
+
 // ===========================
 // const install = require(__dirname +"/routes/install");
 // ==========================================
+
 const app=express();
 const bodyParser = require('body-parser');
 const PORT = process.env.PORT;
+
+const { Server } = require("socket.io");
+
+const io = new Server({
+  cors: {
+    origin : "*",
+    methods:['GET','POST']
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log('====================================');
+  console.log("connection");
+  console.log('====================================');
+  // socket.on("newNotification", ({ senderName, receiverName, type }) => {
+  //   const receiver = getUser(receiverName);
+  //   io.to(receiver.socketId).emit("getNotification", {
+  //     senderName,
+  //     type,
+  //   });
+  // });
+
+  socket.on("disconnect", () => {
+    console.log("disconnect");
+  });
+});
+
+io.listen(5000);
 // Content-type: application/json
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -46,7 +76,8 @@ app.listen(PORT,()=>{
     console.log("Le serveur est démaré sur le port "+PORT);
 });
 
-
+const notificationController = require(__dirname + '/controller/NotificationController');
+notificationController.setIo(io);
 
 // Define the cron job schedule to run every midnight in Morocco time
 const cronJob = cron.schedule('0 0 * * *', async () => {

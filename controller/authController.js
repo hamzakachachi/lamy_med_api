@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); 
 const Session = require(__dirname +'/../model/Session'); 
 const delegueModel = require(__dirname +'/../model/Delegue');
+const { notify } = require(__dirname +"/NotificationController");
 
 
 const auth = async function(req, res) {
@@ -56,7 +57,12 @@ const auth = async function(req, res) {
                         expiresIn: "24h" // expires in 24 hours
                     });
 
-                    // return the information including token as JSON
+                    
+                    notify({
+                        title: "Succès",
+                        message: `Bienvenue! ${user.nom} ${user.prenom}`,
+                        recipient: req.params.username
+                    });
                     res.json({
                         success: true,
                         message: 'Enjoy your token!',

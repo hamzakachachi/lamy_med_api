@@ -2,6 +2,7 @@
 
 const calendrierModel = require(__dirname +'/../model/Calendrier');
 const DelegueModel = require(__dirname +'/../model/Delegue');
+const { notify } = require(__dirname +"/NotificationController");
 
 
 const getAllCalendriers = async (req,res)=>{
@@ -26,7 +27,7 @@ const getAllCalendriers = async (req,res)=>{
 const getOneCalendrier = async (req,res)=>{
     try {
         if (req.decoded.username === req.params.username) {
-            const resultats = await calendrierModel.findOne({username:req.params.username, id:req.params.id});
+            const resultats = await calendrierModel.findOne({username:req.params.username, _id:req.params.id});
             res.status(200).json(resultats);
         }else 
             res.status(403).json({ success: false, message: 'Forbidden' });
@@ -72,18 +73,35 @@ const addMultiCalendriers = async (req, res) => {
         console.log(existingCalendriers);
   
         if (existingCalendriers.length > 0) {
+          
+          notify({
+            title: "Erreur",
+            message: "Une erreur s'est produite lors de l'ajout du rendez-vous. Le rendez-vous est déjà exist pour la date: "+datesOnly[0].split('T')[0],
+            recipient: req.params.username
+          });
           return res.status(400).json({ success: false, message: 'One or more calendriers with the same medecin and dateVisite already exist' });
         }
   
         // If no conflicts, proceed with inserting calendriers
         const resultats = await calendrierModel.insertMany([...req.body.events]);
         const newRes = await calendrierModel.populate(resultats, { path: 'medecin' });
-  
+        
+        notify({
+            title: "Succès",
+            message: `Le rendez-vous a été ajouté avec succés à la date ${datesOnly[0].split('T')[0]}.`,
+            recipient: req.params.username
+        });
         return res.status(200).json(newRes);
       } else {
         return res.status(403).json({ success: false, message: 'Forbidden' });
       }
     } catch (error) {
+      notify({
+        title: "Erreur",
+        message: "Une erreur s'est produite lors de l'ajout du rendez-vous. Veuillez réessayer.",
+        recipient: req.params.username
+      });
+      console.log(error);
       return res.status(500).json({ success: false, message: error.message });
     }
   };
@@ -97,11 +115,22 @@ const updateCalendrier= async (req,res)=>{
                 path: 'produitCalendriers.produit',  // Populate the 'produit' within 'produitCalendriers'
                 select: 'intitule nbStock'  // Select specific product fields
             });
+            
+            notify({
+                title: "Succès",
+                message: `Le rendez-vous a été modifié avec succés.`,
+                recipient: req.params.username
+            });
             res.status(200).json(resultats);
         
         }else 
             res.status(403).json({ success: false, message: 'Forbidden' });
     } catch (error) {
+        notify({
+          title: "Erreur",
+          message: "Une erreur s'est produite lors de la modifification du rendez-vous.",
+          recipient: req.params.username
+        });
         res.status(200).json({ success: false, message: error.message });
     }
     
@@ -110,15 +139,24 @@ const updateCalendrier= async (req,res)=>{
 const updateCalendrierDate = async (req, res) => {
     try {
       if (req.decoded.username === req.params.username) {
-        const oldCl = await calendrierModel.findOne({ id: req.params.id });
-  
+        const oldCl = await calendrierModel.findOne({ _id: req.params.id });
+        const datesOnly = new Date(req.body.date.split('T')[0]).toISOString();
         // Check if the new date already exists for the same medecin
         const existingCalendrier = await calendrierModel.findOne({
           medecin: oldCl.medecin,
-          dateVisite: new Date(req.body.date),
+          dateVisite: {
+            $gte: datesOnly,
+            $lt: new Date(new Date(datesOnly).getTime() + 24 * 60 * 60 * 1000).toISOString()
+          },
         });
   
         if (existingCalendrier) {
+          
+          notify({
+            title: "Erreur",
+            message: "Une erreur s'est produite lors de la modifification du rendez-vous. Le rendez-vous est déjà exist pour la date: "+datesOnly.split('T')[0],
+            recipient: req.params.username
+          });
           return res.status(400).json({ success: false, message: 'Calendrier with the same medecin and dateVisite already exists' });
         }
   
@@ -134,11 +172,22 @@ const updateCalendrierDate = async (req, res) => {
         const Calendrier = new calendrierModel(newCl);
         const rep = await Calendrier.save();
         const resultats = await calendrierModel.findOne({ _id: rep._id }).populate('medecin');
+        
+        notify({
+            title: "Succès",
+            message: `La date du rendez-vous a été modifiée avec succès à ${+datesOnly.split('T')[0]} .`,
+            recipient: req.params.username
+        });
         return res.status(200).json(resultats);
       } else {
         return res.status(403).json({ success: false, message: 'Forbidden' });
       }
     } catch (error) {
+      notify({
+        title: "Erreur",
+        message: "Une erreur s'est produite lors de la modifification du rendez-vous. Veuillez réessayer.",
+        recipient: req.params.username
+      });
       return res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -182,7 +231,7 @@ const deleteCalendrier= async (req,res)=>{
     try {
         
         if (req.decoded.username === req.params.username) {
-            const resultats=await calendrierModel.findOneAndDelete({username:req.params.username, id:req.params.id});
+            const resultats=await calendrierModel.findOneAndDelete({username:req.params.username, _id:req.params.id});
             res.status(200).json(resultats);
         
         }else 
