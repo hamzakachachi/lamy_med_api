@@ -164,8 +164,10 @@ const updateCalendrierStatus = async () => {
             },
             { $set: { status: 2 } } // Set status to 2 (or the desired status)
         );
+        console.log(`Cron job executed. ${result.modifiedCount} calendrier entries updated.`);
         return result;
     } catch (error) {
+        console.error('Error during cron job:', error);
         console.log({ success: false, message: error.message });
     }
 

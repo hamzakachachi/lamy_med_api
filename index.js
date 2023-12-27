@@ -26,6 +26,10 @@ app.use(cors({
 const authRoute=require(__dirname +'/routes/auth');
 app.use("/api/",authRoute);
 
+
+const cronRoute=require(__dirname +'/routes/cron');
+app.use("/api/",cronRoute);
+
 // auth middleware
 const {verifyToken} = require(__dirname +"/controller/authController");
 app.use((req, res, next)=>{
