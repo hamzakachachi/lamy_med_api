@@ -40,6 +40,7 @@ io.on("connection", (socket) => {
 });
 
 io.listen(SOCKET_PORT);
+console.log(SOCKET_PORT);
 // Content-type: application/json
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
