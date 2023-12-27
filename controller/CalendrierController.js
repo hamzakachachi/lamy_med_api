@@ -144,34 +144,38 @@ const updateCalendrierDate = async (req, res) => {
 };
   
 
-const updateCalendrierStatus = async () => {
-    try {
+const updateCalendrierStatus = async (req = null, res = null) => {
+  try {
+      const moroccoTimeZone = 'Africa/Casablanca';
 
-        const moroccoTimeZone = 'Africa/Casablanca';
-        const moment = require('moment-timezone');
+      // Get the current date and time in Morocco's time zone
+      const currentDateInMorocco = new Date().toLocaleString('en-US', { timeZone: moroccoTimeZone });
 
-        // Get the current date and time in Morocco's time zone
-        const currentDateInMorocco = moment().tz(moroccoTimeZone);
+      // Find and update calendrier entries where the date of visite has passed one day ago
+      const result = await calendrierModel.updateMany(
+          {
+              dateVisite: { $lt: currentDateInMorocco },
+              status: 0,
+          },
+          { $set: { status: 2 } } // Set status to 2 (or the desired status)
+      );
 
-        // Calculate the date one day ago in Morocco's time zone
-        const oneDayAgoInMorocco = currentDateInMorocco.clone().subtract(1, 'days');
+      console.log(`Cron job executed. ${result.modifiedCount} calendrier entries updated.`);
 
-        // Find and update calendrier entries where the date of visite has passed one day ago
-        const result = await calendrierModel.updateMany(
-            {
-                dateVisite: { $lt: oneDayAgoInMorocco.toDate() },
-                status: 0,
-            },
-            { $set: { status: 2 } } // Set status to 2 (or the desired status)
-        );
-        console.log(`Cron job executed. ${result.modifiedCount} calendrier entries updated.`);
-        return result;
-    } catch (error) {
-        console.error('Error during cron job:', error);
-        console.log({ success: false, message: error.message });
-    }
+      if (res) {
+          return res.status(200).json({ success: true, message: `Cron job executed. ${result.modifiedCount} calendrier entries updated.` });
+      } else {
+          return result;
+      }
+  } catch (error) {
+      console.error('Error during cron job:', error);
+      console.log({ success: false, message: error.message });
 
-}
+      if (res) {
+          return res.status(200).json({ success: false, message: `Error during cron job` });
+      }
+  }
+};
 
 
 const deleteCalendrier= async (req,res)=>{
