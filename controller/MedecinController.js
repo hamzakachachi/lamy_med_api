@@ -42,7 +42,8 @@ const addMedecin = async (req,res)=>{
             notify({
                 title: "Succès",
                 message: `Médecin ${resultats.nom} ${resultats.prenom} a été ajouté avec succés.`,
-                recipient: req.params.username
+                recipient: req.params.username,
+                type: "success"
             });
             res.status(200).json(resultats);
         }else 
@@ -52,7 +53,8 @@ const addMedecin = async (req,res)=>{
         notify({
             title: "Erreur",
             message: "Une erreur s'est produite lors de l'ajout du médecin. Veuillez réessayer.",
-            recipient: req.params.username
+            recipient: req.params.username,
+            type: "error"
           });
         res.status(200).json({ success: false, message: error.message });
     }
@@ -68,7 +70,8 @@ const updateMedecin= async (req,res)=>{
             notify({
                 title: "Succès",
                 message: `Médecin ${resultats.nom} ${resultats.prenom} a été modifiée avec succés.`,
-                recipient: req.params.username
+                recipient: req.params.username,
+                type: "success"
             });
             res.status(200).json(resultats);
         
@@ -78,7 +81,8 @@ const updateMedecin= async (req,res)=>{
         notify({
             title: "Erreur",
             message: "Une erreur s'est produite lors de la modifification du médecin. Veuillez réessayer.",
-            recipient: req.params.username
+            recipient: req.params.username,
+            type: "error"
         });
         res.status(200).json({ success: false, message: error.message });
     }

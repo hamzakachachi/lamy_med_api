@@ -56,13 +56,7 @@ const auth = async function(req, res) {
                     var token = jwt.sign(payload, secretKey, {
                         expiresIn: "24h" // expires in 24 hours
                     });
-
                     
-                    notify({
-                        title: "Succès",
-                        message: `Bienvenue! ${user.nom} ${user.prenom}`,
-                        recipient: req.params.username
-                    });
                     res.json({
                         success: true,
                         message: 'Enjoy your token!',

@@ -26,8 +26,8 @@ const getNotifications = async (req, res) => {
 
 const notify = async (noti) => {
   try {
-    const { title, message, recipient } = noti;
-    const newNotification = new Notification({ title, message, recipient });
+    const { title, message, recipient, type } = noti;
+    const newNotification = new Notification({ title, message, recipient, type });
     const savedNotification = await newNotification.save();
 
     // Emit the new notification over WebSocket

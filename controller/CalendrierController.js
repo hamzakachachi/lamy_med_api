@@ -66,8 +66,8 @@ const addMultiCalendriers = async (req, res) => {
         const existingCalendriers = await calendrierModel.find({
           medecin: { $in: req.body.events.map(calendrier => calendrier.medecin) },
           dateVisite: {
-            $gte: datesOnly,
-            $lt: datesOnly.map(date => new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000).toISOString())
+            $gte: datesOnly[0],
+            $lt: new Date(new Date(datesOnly[0]).getTime() + 24 * 60 * 60 * 1000).toISOString()
           },
         });
         console.log(existingCalendriers);
@@ -77,11 +77,11 @@ const addMultiCalendriers = async (req, res) => {
           notify({
             title: "Erreur",
             message: "Une erreur s'est produite lors de l'ajout du rendez-vous. Le rendez-vous est déjà exist pour la date: "+datesOnly[0].split('T')[0],
-            recipient: req.params.username
+            recipient: req.params.username,
+            type: "error"
           });
           return res.status(400).json({ success: false, message: 'One or more calendriers with the same medecin and dateVisite already exist' });
         }
-  
         // If no conflicts, proceed with inserting calendriers
         const resultats = await calendrierModel.insertMany([...req.body.events]);
         const newRes = await calendrierModel.populate(resultats, { path: 'medecin' });
@@ -89,7 +89,8 @@ const addMultiCalendriers = async (req, res) => {
         notify({
             title: "Succès",
             message: `Le rendez-vous a été ajouté avec succés à la date ${datesOnly[0].split('T')[0]}.`,
-            recipient: req.params.username
+            recipient: req.params.username,
+            type: "success"
         });
         return res.status(200).json(newRes);
       } else {
@@ -99,7 +100,8 @@ const addMultiCalendriers = async (req, res) => {
       notify({
         title: "Erreur",
         message: "Une erreur s'est produite lors de l'ajout du rendez-vous. Veuillez réessayer.",
-        recipient: req.params.username
+        recipient: req.params.username,
+        type: "error"
       });
       console.log(error);
       return res.status(500).json({ success: false, message: error.message });
@@ -119,7 +121,8 @@ const updateCalendrier= async (req,res)=>{
             notify({
                 title: "Succès",
                 message: `Le rendez-vous a été modifié avec succés.`,
-                recipient: req.params.username
+                recipient: req.params.username,
+                type: "success"
             });
             res.status(200).json(resultats);
         
@@ -129,7 +132,8 @@ const updateCalendrier= async (req,res)=>{
         notify({
           title: "Erreur",
           message: "Une erreur s'est produite lors de la modifification du rendez-vous.",
-          recipient: req.params.username
+          recipient: req.params.username,
+          type: "error"
         });
         res.status(200).json({ success: false, message: error.message });
     }
@@ -154,8 +158,9 @@ const updateCalendrierDate = async (req, res) => {
           
           notify({
             title: "Erreur",
-            message: "Une erreur s'est produite lors de la modifification du rendez-vous. Le rendez-vous est déjà exist pour la date: "+datesOnly.split('T')[0],
-            recipient: req.params.username
+            message: "Une erreur s'est produite lors de la modifification du rendez-vous. Le rendez-vous est déjà exist pour la date: "+ req.body.date.split('T')[0],
+            recipient: req.params.username,
+            type: "error"
           });
           return res.status(400).json({ success: false, message: 'Calendrier with the same medecin and dateVisite already exists' });
         }
@@ -176,7 +181,8 @@ const updateCalendrierDate = async (req, res) => {
         notify({
             title: "Succès",
             message: `La date du rendez-vous a été modifiée avec succès à ${+datesOnly.split('T')[0]} .`,
-            recipient: req.params.username
+            recipient: req.params.username,
+            type: "success"
         });
         return res.status(200).json(resultats);
       } else {
@@ -186,7 +192,8 @@ const updateCalendrierDate = async (req, res) => {
       notify({
         title: "Erreur",
         message: "Une erreur s'est produite lors de la modifification du rendez-vous. Veuillez réessayer.",
-        recipient: req.params.username
+        recipient: req.params.username,
+        type: "error"
       });
       return res.status(500).json({ success: false, message: error.message });
     }
