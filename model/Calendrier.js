@@ -34,6 +34,10 @@ const CalendrierSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  deleted: {
+    type: Boolean,
+    default: false,
+  },
   produitCalendriers: [{
     produit: {
       type: mongoose.Schema.Types.ObjectId,

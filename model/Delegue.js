@@ -19,6 +19,10 @@ const DelegueSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  deleted: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -29,6 +33,11 @@ const DelegueSchema = new mongoose.Schema({
   },
   lastActivities: Date,
   status: String,
+  role: {
+    type: String,
+    default: "user",
+    enum: ["user", "admin"]
+  },
 });
 
 module.exports = mongoose.model('Delegue', DelegueSchema);

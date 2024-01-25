@@ -14,10 +14,14 @@ const ProduitSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  deleted: {
+    type: Boolean,
+    default: false,
+  },
   nbStock: {
     type: Number,
     required: true,
-    default: 0,
+    default: 10,
   },
 });
 

@@ -1,7 +1,6 @@
 const permissions = {
     admin: ['admin'],
-    chef: ['admin', 'chef'],
-    agent: ['admin', 'agent', 'chef']
+    user: ['user']
 };
   
 const checkPermission = (permission) => {
