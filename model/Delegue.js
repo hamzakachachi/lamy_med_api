@@ -1,43 +1,46 @@
-'use strict';
-const mongoose = require('mongoose');
+// models/Delegue.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../database/connect');
 
-const DelegueSchema = new mongoose.Schema({
-  nom: {
-    type: String,
-    required: true,
-  },
-  prenom: {
-    type: String,
-    required: true,
-  },
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  deleted: {
-    type: Boolean,
-    default: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-  lastActivities: Date,
-  status: String,
-  role: {
-    type: String,
-    default: "user",
-    enum: ["user", "admin"]
-  },
+const Delegue = sequelize.define('Delegue', {
+    nom: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    prenom: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    username: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    deleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    lastActivities: DataTypes.DATE,
+    status: DataTypes.STRING,
+    role: {
+        type: DataTypes.STRING,
+        defaultValue: "user",
+        validate: {
+            isIn: [['user', 'admin']],
+        },
+    },
 });
 
-module.exports = mongoose.model('Delegue', DelegueSchema);
+module.exports = Delegue;

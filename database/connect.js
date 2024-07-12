@@ -1,10 +1,14 @@
-'use strict';
-const mongoose = require("mongoose");
-require("dotenv").config();
-mongoose.set('strictQuery', true);
-const mongoDB = process.env.DATABASE_URL + "/lamy_med_api";
+// database.js
+const { Sequelize } = require('sequelize');
+const config = require('../config/config');
 
-main().then(() => { console.log('Réussi') }).catch(err => console.log(err));
-async function main() {
-    await mongoose.connect(mongoDB, { useNewUrlParser: "true" });
-}
+const env = process.env.NODE_ENV || 'development';
+const dbConfig = config[env];
+
+const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
+    host: dbConfig.host,
+    dialect: dbConfig.dialect,
+});
+
+module.exports = sequelize;
+

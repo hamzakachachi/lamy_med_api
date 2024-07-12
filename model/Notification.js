@@ -1,13 +1,16 @@
-'use strict';
-const mongoose = require('mongoose');
+// models/Notification.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../database/connect');
 
-const notificationSchema = new mongoose.Schema({
-    title: String,
-    message: String,
-    recipient: String,
-    type: String,
-    createdAt: { type: Date, default: Date.now },
+const Notification = sequelize.define('Notification', {
+    title: DataTypes.STRING,
+    message: DataTypes.STRING,
+    recipient: DataTypes.STRING,
+    type: DataTypes.STRING,
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
 });
-  
-module.exports = mongoose.model('Notification', notificationSchema);
 
+module.exports = Notification;

@@ -2,7 +2,16 @@ const express=require('express');
 const cron = require('node-cron');
 require('dotenv').config();
 const cors=require('cors');
-const db=require(__dirname +"/database/connect");
+const sequelize=require(__dirname +"/database/connect");
+
+const connectDB = async () => {
+  try {
+      await sequelize.sync({ force: true });
+      console.log('Connection to the database has been established successfully.');
+  } catch (error) {
+      console.error('Unable to connect to the database:', error);
+  }
+};
 
 // ===========================
 // const install = require(__dirname +"/routes/install");
@@ -121,3 +130,7 @@ process.on('SIGINT', () => {
     mongoose.connection.close();
     process.exit();
 });
+
+
+
+connectDB();

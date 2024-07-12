@@ -1,12 +1,12 @@
-'use strict';
-// get an instance of mongoose and mongoose.Schema
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+// models/Session.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../database/connect');
 
-// set up a mongoose model and pass it using module.exports
-module.exports = mongoose.model('Session', new Schema({
-    username: String,
-    deviceId: String,
-    role: String,
-    secret: String
-}));
+const Session = sequelize.define('Session', {
+    username: DataTypes.STRING,
+    deviceId: DataTypes.STRING,
+    role: DataTypes.STRING,
+    secret: DataTypes.STRING,
+});
+
+module.exports = Session;

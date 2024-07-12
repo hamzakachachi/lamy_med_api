@@ -1,5 +1,7 @@
 'use strict';
-const  Notification  = require('../model/Notification'); // Assuming your Sequelize models are defined and exported correctly
+const Notification = require(__dirname +'/../model/Notification');
+
+// notificationController.js
 
 let io;
 
@@ -11,10 +13,7 @@ const getNotifications = async (req, res) => {
   try {
     if (req.params.username === req.decoded.username) {
       const recipient = req.params.username;
-      const notifications = await Notification.findAll({
-        where: { recipient },
-        order: [['createdAt', 'DESC']],
-      });
+      const notifications = await Notification.find({ recipient }).sort({ createdAt: -1 });
       res.status(200).json(notifications);
     } else {
       res.status(403).json({ success: false, message: 'Forbidden' });
@@ -28,11 +27,12 @@ const getNotifications = async (req, res) => {
 const notify = async (noti) => {
   try {
     const { title, message, recipient, type } = noti;
-    const newNotification = await Notification.create({ title, message, recipient, type });
+    const newNotification = new Notification({ title, message, recipient, type });
+    const savedNotification = await newNotification.save();
 
     // Emit the new notification over WebSocket
     if (io) {
-      io.emit('newNotification-' + recipient, newNotification);
+      io.emit('newNotification-'+recipient, savedNotification);
     } else {
       console.error('Socket.IO is not available');
     }

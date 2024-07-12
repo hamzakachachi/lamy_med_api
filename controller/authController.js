@@ -4,158 +4,124 @@ const uniqid = require('uniqid');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); 
 const Session = require(__dirname +'/../model/Session'); 
-const delegueModel = require(__dirname +'/../model/Delegue');
+const Delegue = require(__dirname +'/../model/Delegue');
 const { notify } = require(__dirname +"/NotificationController");
 
-
 const auth = async function(req, res) {
-    // find the user
     try {
-        console.log(req.body);
-        const user = await delegueModel.findOne({username: req.body.username});
+        const user = await Delegue.findOne({ where: { username: req.body.username } });
         if (!user) {
             res.json({ success: false, message: 'Authentication failed. User not found.' });
-        } else if (user) {
-            // check if password matches
+        } else {
             const passwordsMatch = await bcrypt.compare(req.body.password, user.password);
             if (!passwordsMatch) {
                 res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+            } else if (!req.body.deviceId) {
+                res.json({ success: false, message: 'Authentication failed. Device ID not found.' });
             } else {
-                if (!req.body.deviceId) {
-                    res.json({ success: false, message: 'Authentication failed. Device ID not found.' });
-                } else {
-                    // if user is found and password is right
-                    // create a token with only our given payload
-                    // we don't want to pass in the entire user since that has the password
-                    const payload = {
-                        id: user._id,
-                        role: user.role,
-                        username: user.username
-                    };
-                    var secretKey = uniqid();
-                    // save session to db
-                    var sess = {
-                        username: req.body.username,
-                        deviceId: req.body.deviceId,
-                        role: user.role,
-                        secret: secretKey
-                    };
+                const payload = {
+                    id: user.id,
+                    role: user.role,
+                    username: user.username
+                };
+                const secretKey = uniqid();
+                const sessionData = {
+                    username: req.body.username,
+                    deviceId: req.body.deviceId,
+                    role: user.role,
+                    secret: secretKey
+                };
 
-                    var s = await Session.findOne({
+                let session = await Session.findOne({
+                    where: {
                         username: req.body.username,
                         deviceId: req.body.deviceId
-                    });
-
-                    if (s) {
-                        await s.updateOne(sess); 
-                    } else {
-                        s = new Session({...sess});
-                        await s.save();
                     }
+                });
 
-                    var token = jwt.sign(payload, secretKey, {
-                        expiresIn: "24h" // expires in 24 hours
-                    });
-                    
-                    res.json({
-                        success: true,
-                        message: 'Enjoy your token!',
-                        token: token
-                    });
+                if (session) {
+                    await session.update(sessionData);
+                } else {
+                    session = await Session.create(sessionData);
                 }
+
+                const token = jwt.sign(payload, secretKey, {
+                    expiresIn: "24h"
+                });
+
+                res.json({
+                    success: true,
+                    message: 'Enjoy your token!',
+                    token: token
+                });
             }
         }
-
     } catch (error) {
-        return res.status(200).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
-      
 };
 
 const verifyToken = async function(req, res, next) {
-    // check header or url parameters or post parameters for token
-    var token = req.headers['x-access-token'] || req.body.token || req.query.token;
-    var deviceId = req.headers['x-access-device-id'] || req.body.deviceId || req.query.deviceId;
-    var username = req.headers['x-access-username'] || req.body.username || req.query.username;
-    
-    if (!token) {
+    const token = req.headers['x-access-token'] || req.body.token || req.query.token;
+    const deviceId = req.headers['x-access-device-id'] || req.body.deviceId || req.query.deviceId;
+    const username = req.headers['x-access-username'] || req.body.username || req.query.username;
+
+    if (!token || !deviceId || !username) {
         return res.status(403).send({
             success: false,
-            message: 'No token provided.'
+            message: 'Token, Device ID, or Username not provided.'
         });
     }
-    if (!deviceId) {
-        return res.status(403).send({
-            success: false,
-            message: 'No Device Id provided.'
-        });
-    }
-    if (!username) {
-        return res.status(403).send({
-            success: false,
-            message: 'No Username provided.'
-        });
-    }
-    // get secret key on db
+
     try {
-        var sess = await Session.findOne({ "deviceId": deviceId, "username": username });
-        if (sess) {
-            var secretKey = sess.secret;
-            // verifies secret and checks exp
+        const session = await Session.findOne({ where: { deviceId: deviceId, username: username } });
+        if (session) {
+            const secretKey = session.secret;
             jwt.verify(token, secretKey, function(err, decoded) {
                 if (err) {
-                    return res.status(200).json({ success: false, message: err.message });
+                    return res.status(500).json({ success: false, message: err.message });
                 }
-                if (next) {
-                    // if everything is good, save to request for use in other routes
-                    req.decoded = decoded;
-                    next();
-                } else {
-                    return res.status(200).send(decoded);
-                }
+                req.decoded = decoded;
+                next();
             });
         } else {
             return res.json({ success: false, message: 'Failed to authenticate token.' });
         }
     } catch (error) {
-        return res.status(200).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
-    
 };
 
-
-// route to show a random message (GET http://localhost:8080/api/)
 const logout = async function(req, res) {
-    // check header or url parameters or post parameters for token
-    var token = req.body.token || req.query.token || req.headers['x-access-token'];
-    var deviceId = req.body.deviceId || req.query.deviceId || req.headers['x-access-device-id'];
-    var username = req.body.username || req.query.username || req.headers['x-access-username'];
-    // decode token
+    const token = req.body.token || req.query.token || req.headers['x-access-token'];
+    const deviceId = req.body.deviceId || req.query.deviceId || req.headers['x-access-device-id'];
+    const username = req.body.username || req.query.username || req.headers['x-access-username'];
+
     if (token && deviceId && username) {
-        // remove session key on db
         try {
-            const rep = await Session.findOneAndDelete({ "deviceId": deviceId, "username": username });
-            if (rep) {
+            const result = await Session.destroy({ where: { deviceId: deviceId, username: username } });
+            if (result) {
                 return res.status(200).send({
                     success: true,
-                    message: ''
+                    message: 'Logged out successfully.'
                 });
+            } else {
+                return res.status(500).json({ success: false, message: 'Failed to log out.' });
             }
-            
         } catch (error) {
-            return res.status(200).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
-        
     } else {
-        // if there is no token
-        // return an error
         return res.status(403).send({
             success: false,
-            message: 'No token provided.'
+            message: 'Token, Device ID, or Username not provided.'
         });
     }
 };
 
-module.exports={
-    auth, logout, verifyToken
-}
+module.exports = {
+    auth,
+    logout,
+    verifyToken
+};
+

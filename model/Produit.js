@@ -1,28 +1,29 @@
-'use strict';
-const mongoose = require('mongoose');
+// models/Produit.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../database/connect');
 
-const ProduitSchema = new mongoose.Schema({
-  intitule: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-  deleted: {
-    type: Boolean,
-    default: false,
-  },
-  nbStock: {
-    type: Number,
-    required: true,
-    default: 10,
-  },
+const Produit = sequelize.define('Produit', {
+    intitule: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    deleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    nbStock: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 10,
+    },
 });
 
-module.exports = mongoose.model('Produit', ProduitSchema);
+module.exports = Produit;
