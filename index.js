@@ -6,16 +6,13 @@ const sequelize=require(__dirname +"/database/connect");
 
 const connectDB = async () => {
   try {
-      await sequelize.sync({ force: true });
+      await sequelize.sync({ force: false });
       console.log('Connection to the database has been established successfully.');
   } catch (error) {
       console.error('Unable to connect to the database:', error);
   }
 };
 
-// ===========================
-// const install = require(__dirname +"/routes/install");
-// ==========================================
 
 const app=express();
 const http = require('http').createServer(app);
@@ -134,3 +131,7 @@ process.on('SIGINT', () => {
 
 
 connectDB();
+
+// ===========================
+// const install = require(__dirname +"/routes/install");
+// ==========================================
