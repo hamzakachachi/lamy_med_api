@@ -76,7 +76,7 @@ const produits = [
   }
 ];
 
-sequelize.sync({ force: false }).then(async () => {
+sequelize.sync({ force: true }).then(async () => {
   try {
     await Delegue.bulkCreate(delegues);
     console.log('Delegues inserted successfully.');

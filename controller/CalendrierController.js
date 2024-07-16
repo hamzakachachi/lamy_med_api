@@ -1,7 +1,10 @@
 'use strict';
-
-const Calendrier = require(__dirname +'/../model/Calendrier');
+const { Sequelize } = require('sequelize');
+const { ProduitCalendrier } = require('../model/Calendrier');
+const {Calendrier} = require(__dirname +'/../model/Calendrier');
 const Delegue = require(__dirname +'/../model/Delegue');
+const Medecin = require(__dirname +'/../model/Medecin');
+const Produit = require(__dirname +'/../model/Produit');
 const { notify } = require(__dirname +"/NotificationController");
 
 
@@ -14,15 +17,18 @@ const getAllCalendriers = async (req, res) => {
             });
             const resultats = await Calendrier.findAll({
                 where: {
-                    delegueId: user.id,
+                    delegue: user.id,
                     deleted: false
                 },
                 include: [
-                    { model: Medecin },
+                    { model: Medecin, as: "medecinObject" },
                     {
                         model: Produit,
-                        through: { attributes: [] }, // Assuming many-to-many relationship through 'produitCalendriers'
-                        attributes: ['intitule', 'nbStock']
+                        through: {
+                            model: ProduitCalendrier,
+                            attributes: ['quantite']
+                        },
+                        attributes: ["id", 'intitule', 'nbStock']
                     }
                 ]
             });
@@ -32,8 +38,10 @@ const getAllCalendriers = async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+        
     }
 };
+
 
 const getOneCalendrier = async (req, res) => {
     try {
@@ -78,9 +86,9 @@ const addMultiCalendriers = async (req, res) => {
 
             const existingCalendriers = await Calendrier.findAll({
                 where: {
-                    medecinId: req.body.events.map(calendrier => calendrier.medecinId),
+                    medecin: req.body.events.map(calendrier => calendrier.medecin),
                     dateVisite: {
-                        [Sequelize.Op.between]: [datesOnly[0], new Date(new Date(datesOnly[0]).getTime() + 24 * 60 * 60 * 1000)]
+                        [Sequelize.Op.between]: [datesOnly[0], new Date(new Date(datesOnly[0]).getTime() + (24 * 60 * 60 * 1000) - 1)]
                     },
                     deleted: false
                 }
@@ -99,7 +107,17 @@ const addMultiCalendriers = async (req, res) => {
             const resultats = await Calendrier.bulkCreate([...req.body.events]);
             const newRes = await Calendrier.findAll({
                 where: { id: resultats.map(r => r.id) },
-                include: [{ model: Medecin }]
+                include: [
+                    { model: Medecin, as: "medecinObject" },
+                    {
+                        model: Produit,
+                        through: {
+                            model: ProduitCalendrier,
+                            attributes: ['quantite']
+                        },
+                        attributes: ['intitule', 'nbStock']
+                    }
+                ]
             });
 
             notify({
@@ -124,18 +142,58 @@ const addMultiCalendriers = async (req, res) => {
 };
 
 const updateCalendrier = async (req, res) => {
+    const { produitCalendriers, ...calendrierData } = req.body;
+    
     try {
         if (req.decoded.username === req.params.username || req.decoded.role === "admin") {
-            const calendrier = await Calendrier.findByPk(req.params.id);
+            const calendrier = await Calendrier.findByPk(req.params.id, {
+                include: [{
+                    model: Produit,
+                    through: {
+                        model: ProduitCalendrier,
+                        attributes: ['quantite']
+                    },
+                    attributes: ["id", 'intitule', 'nbStock']
+                }]
+            });
             if (!calendrier) {
                 return res.status(404).json({ success: false, message: 'Calendrier not found' });
             }
-            await calendrier.update({ ...req.body });
-            await calendrier.reload({ include: [{ model: Medecin }, { model: Produit, through: { attributes: [] }, attributes: ['intitule', 'nbStock'] }] });
+
+            // Update Calendrier fields
+            await calendrier.update(calendrierData);
+
+            // Handle produitCalendriers updates
+            if (produitCalendriers && Array.isArray(produitCalendriers)) {
+                // Delete existing produitCalendriers
+                await ProduitCalendrier.destroy({ where: { calendrierId: calendrier.id } });
+
+                // Create new produitCalendriers
+                const newProduitCalendriers = produitCalendriers.map(pc => ({
+                    calendrierId: calendrier.id,
+                    produitId: pc.produit,
+                    quantite: pc.quantite
+                }));
+                await ProduitCalendrier.bulkCreate(newProduitCalendriers);
+            }
+
+            // Reload the updated calendrier with associations
+            await calendrier.reload({ 
+                include: [
+                    { model: Medecin, as: "medecinObject" }, 
+                    {
+                        model: Produit,
+                        through: {
+                            model: ProduitCalendrier,
+                            attributes: ['quantite']
+                        },
+                        attributes: ["id", 'intitule', 'nbStock']
+                    }]
+                });
 
             notify({
                 title: "Succès",
-                message: `Le rendez-vous a été modifié avec succés.`,
+                message: `Le rendez-vous a été modifié avec succès.`,
                 recipient: req.decoded.username,
                 type: "success"
             });
@@ -154,6 +212,7 @@ const updateCalendrier = async (req, res) => {
     }
 };
 
+
 const updateCalendrierDate = async (req, res) => {
     try {
         if (req.decoded.username === req.params.username || req.decoded.role === "admin") {
@@ -164,7 +223,7 @@ const updateCalendrierDate = async (req, res) => {
             const datesOnly = new Date(req.body.date.split('T')[0]).toISOString();
             const existingCalendrier = await Calendrier.findOne({
                 where: {
-                    medecinId: oldCl.medecinId,
+                    medecin: oldCl.medecin,
                     dateVisite: {
                         [Sequelize.Op.between]: [datesOnly, new Date(new Date(datesOnly).getTime() + 24 * 60 * 60 * 1000)]
                     },
@@ -183,16 +242,26 @@ const updateCalendrierDate = async (req, res) => {
             }
 
             const newCl = {
-                medecinId: oldCl.medecinId,
+                medecin: oldCl.medecin,
                 dateVisite: req.body.date,
                 status: 0,
-                produitCalendriers: [...oldCl.produitCalendriers],
-                delegueId: oldCl.delegueId,
+                // produitCalendriers: [...oldCl.produitCalendriers],
+                delegue: oldCl.delegue,
                 note: oldCl.note,
             };
 
             const calendrier = await Calendrier.create(newCl);
-            await calendrier.reload({ include: [{ model: Medecin }] });
+            await calendrier.reload({ include: [
+                { model: Medecin, as: "medecinObject" },
+                {
+                    model: Produit,
+                    through: {
+                        model: ProduitCalendrier,
+                        attributes: ['quantite']
+                    },
+                    attributes: ['intitule', 'nbStock']
+                }
+            ] });
 
             notify({
                 title: "Succès",

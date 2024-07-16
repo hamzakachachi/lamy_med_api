@@ -1,0 +1,18 @@
+POST http://localhost:8080/api/login HTTP/1.1
+content-type: application/json
+
+{
+    "username" : "lamy_med",
+    "password" : "pass1234",
+    "deviceId" : 1
+}
+
+###
+GET http://localhost:8080/api/calendriers/lamy_med HTTP/1.1
+content-type: application/json
+
+{
+    "username" : "lamy_med",
+    "token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6InVzZXIiLCJ1c2VybmFtZSI6ImxhbXlfbWVkIiwiaWF0IjoxNzIxMTM0NDI3LCJleHAiOjE3MjEyMjA4Mjd9.8wb4dd5FvDU5NrHAkOxcte7wzj_NuEYU2kUNuZKXmxE",
+    "deviceId" : 1
+}

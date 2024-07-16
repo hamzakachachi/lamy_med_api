@@ -20,14 +20,14 @@ const Medecin = sequelize.define('Medecin', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    assignedToId: {
+    assignedTo: {
         type: DataTypes.INTEGER,
         references: {
             model: Delegue,
             key: 'id',
         },
     },
-    createdById: {
+    createdBy: {
         type: DataTypes.INTEGER,
         references: {
             model: Delegue,
@@ -47,5 +47,11 @@ const Medecin = sequelize.define('Medecin', {
         defaultValue: DataTypes.NOW,
     },
 });
+// Define associations for Medecin and Delegue
+Medecin.belongsTo(Delegue, { foreignKey: 'assignedTo' });
+Delegue.hasMany(Medecin, { foreignKey: 'assignedTo' });
+
+Medecin.belongsTo(Delegue, { foreignKey: 'createdBy' });
+Delegue.hasMany(Medecin, { foreignKey: 'createdBy' });
 
 module.exports = Medecin;

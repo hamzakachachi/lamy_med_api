@@ -45,7 +45,7 @@ const addProduit = async (req, res) => {
             recipient: req.decoded.username,
             type: "success"
         });
-
+        
         res.status(200).json(produit);
     } catch (error) {
         notify({
@@ -83,14 +83,17 @@ const addManyProduit = async (req, res) => {
 
 const updateProduit = async (req, res) => {
     try {
-        const [rowsUpdated, [updatedProduit]] = await Produit.update(req.body, {
-            where: { id: req.params.id },
-            returning: true
+        const rowsUpdated = await Produit.update(req.body, {
+            where: { id: req.params.id }
         });
-        
-        if (!updatedProduit) {
+
+        // Check if any rows were updated
+        if (rowsUpdated[0] === 0) {
             return res.status(404).json({ success: false, message: 'Produit not found' });
         }
+
+        // Fetch the updated record
+        const updatedProduit = await Produit.findByPk(req.params.id);
 
         notify({
             title: "Succès",
@@ -99,6 +102,7 @@ const updateProduit = async (req, res) => {
             type: "success"
         });
 
+        // console.log(updatedProduit);
         res.status(200).json(updatedProduit);
     } catch (error) {
         notify({
@@ -107,29 +111,35 @@ const updateProduit = async (req, res) => {
             recipient: req.decoded.username,
             type: "error"
         });
+        // console.log(error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 const deleteProduit = async (req, res) => {
     try {
-        const deletedProduit = await Produit.update(
+        // Update the 'deleted' field to true
+        const rowsUpdated = await Produit.update(
             { deleted: true },
-            { where: { id: req.params.id }, returning: true }
+            { where: { id: req.params.id } }
         );
         
-        if (!deletedProduit[1][0]) {
+        // Check if any rows were updated
+        if (rowsUpdated[0] === 0) {
             return res.status(404).json({ success: false, message: 'Produit not found' });
         }
 
+        // Fetch the updated record
+        const deletedProduit = await Produit.findByPk(req.params.id);
+
         notify({
             title: "Succès",
-            message: `Produit ${deletedProduit[1][0].intitule} a été supprimé avec succès.`,
+            message: `Produit ${deletedProduit.intitule} a été supprimé avec succès.`,
             recipient: req.decoded.username,
             type: "success"
         });
 
-        res.status(200).json(deletedProduit[1][0]);
+        res.status(200).json(deletedProduit);
     } catch (error) {
         notify({
             title: "Erreur",
@@ -137,6 +147,7 @@ const deleteProduit = async (req, res) => {
             recipient: req.decoded.username,
             type: "error"
         });
+        console.log(error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

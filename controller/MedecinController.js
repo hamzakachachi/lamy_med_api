@@ -10,11 +10,11 @@ const getAllMedecins = async (req, res) => {
         if (req.decoded.username === req.params.username || req.decoded.role === "admin") {
             const user = await Delegue.findOne({ 
                 where: { username: req.params.username },
-                attributes: ['_id']
+                attributes: ['id']
             });
             const resultats = await Medecin.findAll({
                 where: {
-                    assignedTo: user._id,
+                    assignedTo: user.id,
                     deleted: false
                 }
             });
@@ -32,7 +32,7 @@ const getOneMedecin = async (req, res) => {
         if (req.decoded.username === req.params.username || req.decoded.role === "admin") {
             const resultats = await Medecin.findOne({
                 where: {
-                    _id: req.params.id,
+                    id: req.params.id,
                     username: req.params.username
                 }
             });
@@ -76,19 +76,23 @@ const addMedecin = async (req, res) => {
 const updateMedecin = async (req, res) => {
     try {
         if (req.decoded.username === req.params.username || req.decoded.role === "admin") {
-            const [rowsUpdated, [updatedMedecin]] = await Medecin.update(req.body, {
-                where: { _id: req.params.id },
-                returning: true
+            const rowsUpdated = await Medecin.update(req.body, {
+                where: { id: req.params.id }
             });
-            if (!updatedMedecin) {
+            
+            if (rowsUpdated[0] === 0) {
                 return res.status(404).json({ success: false, message: 'Medecin not found' });
             }
+            
+            const updatedMedecin = await Medecin.findOne({ where: { id: req.params.id } });
+            
             notify({
                 title: "Succès",
                 message: `Médecin ${updatedMedecin.nom} ${updatedMedecin.prenom} a été modifié avec succès.`,
                 recipient: req.decoded.username,
                 type: "success"
             });
+            
             res.status(200).json(updatedMedecin);
         } else {
             res.status(403).json({ success: false, message: 'Forbidden' });
@@ -100,26 +104,36 @@ const updateMedecin = async (req, res) => {
             recipient: req.decoded.username,
             type: "error"
         });
+        console.error(error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
+
 const deleteMedecin = async (req, res) => {
     try {
-        const deletedMedecin = await Medecin.update(
+        // Update the 'deleted' field to true
+        const rowsUpdated = await Medecin.update(
             { deleted: true },
-            { where: { _id: req.params.id }, returning: true }
+            { where: { id: req.params.id } }
         );
-        if (!deletedMedecin[1][0]) {
+
+        // Check if any rows were updated
+        if (rowsUpdated[0] === 0) {
             return res.status(404).json({ success: false, message: 'Medecin not found' });
         }
+
+        // Fetch the updated record
+        const deletedMedecin = await Medecin.findByPk(req.params.id);
+
         notify({
             title: "Succès",
-            message: `Médecin ${deletedMedecin[1][0].nom} ${deletedMedecin[1][0].prenom} a été supprimé avec succès.`,
+            message: `Médecin ${deletedMedecin.nom} ${deletedMedecin.prenom} a été supprimé avec succès.`,
             recipient: req.decoded.username,
             type: "success"
         });
-        res.status(200).json(deletedMedecin[1][0]);
+
+        res.status(200).json(deletedMedecin);
     } catch (error) {
         notify({
             title: "Erreur",

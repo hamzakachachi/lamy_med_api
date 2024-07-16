@@ -6,7 +6,7 @@ const Delegue = require('./Delegue');
 const Produit = require('./Produit');
 
 const Calendrier = sequelize.define('Calendrier', {
-    medecinId: {
+    medecin: {
         type: DataTypes.INTEGER,
         references: {
             model: Medecin,
@@ -14,7 +14,7 @@ const Calendrier = sequelize.define('Calendrier', {
         },
         allowNull: false,
     },
-    delegueId: {
+    delegue: {
         type: DataTypes.INTEGER,
         references: {
             model: Delegue,
@@ -52,14 +52,22 @@ const Calendrier = sequelize.define('Calendrier', {
 });
 
 const ProduitCalendrier = sequelize.define('ProduitCalendrier', {
-    produitId: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: Produit,
-            key: 'id',
-        },
-        allowNull: false,
-    },
+    // produit: {
+    //     type: DataTypes.INTEGER,
+    //     references: {
+    //         model: Produit,
+    //         key: 'id',
+    //     },
+    //     allowNull: false,
+    // },
+    // calendrier: {
+    //     type: DataTypes.INTEGER,
+    //     references: {
+    //         model: Calendrier,
+    //         key: 'id',
+    //     },
+    //     allowNull: false,
+    // },
     quantite: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -74,7 +82,15 @@ const ProduitCalendrier = sequelize.define('ProduitCalendrier', {
     },
 });
 
-Calendrier.hasMany(ProduitCalendrier, { as: 'produitCalendriers' });
-ProduitCalendrier.belongsTo(Calendrier);
+// Define many-to-many relationships using through model
+Calendrier.belongsToMany(Produit, { through: ProduitCalendrier, foreignKey: 'calendrierId' });
+Produit.belongsToMany(Calendrier, { through: ProduitCalendrier, foreignKey: 'produitId' });
+
+// Define associations for Medecin and Delegue
+Calendrier.belongsTo(Medecin, { foreignKey: 'medecin', as:"medecinObject" });
+Medecin.hasMany(Calendrier, { foreignKey: 'medecin', as: "calendriers" });
+
+Calendrier.belongsTo(Delegue, { foreignKey: 'delegue', as:"delegueObject"});
+Delegue.hasMany(Calendrier, { foreignKey: 'delegue', as: "calendriers"});
 
 module.exports = { Calendrier, ProduitCalendrier };

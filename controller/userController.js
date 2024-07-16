@@ -1,5 +1,6 @@
 'use strict';
-const Calendrier = require('../model/Calendrier'); // Assuming your Sequelize models are defined and exported correctly
+const { Sequelize, Op } = require('sequelize');
+const {Calendrier} = require('../model/Calendrier'); // Assuming your Sequelize models are defined and exported correctly
 const Delegue = require('../model/Delegue'); // Assuming your Sequelize models are defined and exported correctly
 const { notify } = require('./NotificationController');
 const bcrypt = require('bcrypt');
@@ -8,41 +9,42 @@ const getAllDelegues = async (req, res) => {
     try {
         const resultats = await Delegue.findAll({
             where: {
-                username: { $ne: req.decoded.username },
+                username: { [Op.ne]: req.decoded.username },
                 deleted: false
             },
-            include: [{
-                model: Calendrier,
-                as: 'calendriers'
-            }],
+            // include: [{
+            //     model: Calendrier,
+            //     as: 'calendriers'
+            // }],
             attributes: {
+                exclude: ['password'],
                 include: [
                     'id', 'nom', 'prenom', 'username', 'createdAt', 'updatedAt', 'lastActivities', 'status', 'role',
                     [
-                        sequelize.literal(`(
+                        Sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM calendriers AS calendrier
-                            WHERE calendrier.delegueId = Delegue.id
+                            WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 0
                         )`),
                         'countStatus0'
                     ],
                     [
-                        sequelize.literal(`(
+                        Sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM calendriers AS calendrier
-                            WHERE calendrier.delegueId = Delegue.id
+                            WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 1
                         )`),
                         'countStatus1'
                     ],
                     [
-                        sequelize.literal(`(
+                        Sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM calendriers AS calendrier
-                            WHERE calendrier.delegueId = Delegue.id
+                            WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 2
                         )`),
@@ -52,6 +54,7 @@ const getAllDelegues = async (req, res) => {
             },
             order: [['createdAt', 'DESC']]
         });
+        // console.log(resultats);
         res.status(200).json(resultats);
 
     } catch (error) {
@@ -91,38 +94,39 @@ const addUser = async (req, res) => {
 
         const rep = await Delegue.findOne({
             where: { id: user.id },
-            include: [{
-                model: Calendrier,
-                as: 'calendriers'
-            }],
+            // include: [{
+            //     model: Calendrier,
+            //     as: 'calendriers'
+            // }],
             attributes: {
+                exclude: ['password'],
                 include: [
                     'id', 'nom', 'prenom', 'username', 'createdAt', 'updatedAt', 'lastActivities', 'status', 'role',
                     [
-                        sequelize.literal(`(
+                        Sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM calendriers AS calendrier
-                            WHERE calendrier.delegueId = Delegue.id
+                            WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 0
                         )`),
                         'countStatus0'
                     ],
                     [
-                        sequelize.literal(`(
+                        Sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM calendriers AS calendrier
-                            WHERE calendrier.delegueId = Delegue.id
+                            WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 1
                         )`),
                         'countStatus1'
                     ],
                     [
-                        sequelize.literal(`(
+                        Sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM calendriers AS calendrier
-                            WHERE calendrier.delegueId = Delegue.id
+                            WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 2
                         )`),
@@ -166,15 +170,57 @@ const updateUser = async (req, res) => {
             updates.password = await bcrypt.hash(req.body.password, 10);
         }
 
-        const resultats = await Delegue.findOneAndUpdate(
-            { _id: req.params.id },
-            updates,
-            { new: true }
-        );
+        const rowsUpdated = await Delegue.update(updates, {
+            where: { id: req.params.id }
+        });
 
-        if (!resultats) {
-            throw new Error('Délégué non trouvé');
+        if (rowsUpdated[0] === 0) {
+            return res.status(404).json({ success: false, message: 'Délégué non trouvé' });
         }
+
+        const resultats = await Delegue.findOne({
+            where: { id: req.params.id },
+            // include: [{
+            //     model: Calendrier,
+            //     as: 'calendriers'
+            // }],
+            attributes: {
+                exclude: ['password'],
+                include: [
+                    'id', 'nom', 'prenom', 'username', 'createdAt', 'updatedAt', 'lastActivities', 'status', 'role',
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM calendriers AS calendrier
+                            WHERE calendrier.delegue = Delegue.id
+                            AND calendrier.deleted = false
+                            AND calendrier.status = 0
+                        )`),
+                        'countStatus0'
+                    ],
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM calendriers AS calendrier
+                            WHERE calendrier.delegue = Delegue.id
+                            AND calendrier.deleted = false
+                            AND calendrier.status = 1
+                        )`),
+                        'countStatus1'
+                    ],
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM calendriers AS calendrier
+                            WHERE calendrier.delegue = Delegue.id
+                            AND calendrier.deleted = false
+                            AND calendrier.status = 2
+                        )`),
+                        'countStatus2'
+                    ]
+                ]
+            }
+        });
 
         notify({
             title: "Succès",
@@ -191,29 +237,33 @@ const updateUser = async (req, res) => {
             recipient: req.decoded.username,
             type: "error"
         });
+        console.log(error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
+
 const deleteUser = async (req, res) => {
     try {
-        const resultats = await Delegue.update(
+        const rowsUpdated = await Delegue.update(
             { deleted: true },
-            { where: { id: req.params.id }, returning: true }
+            { where: { id: req.params.id } }
         );
 
-        if (!resultats[1][0]) {
-            throw new Error('Délégué non trouvé');
+        if (rowsUpdated[0] === 0) {
+            return res.status(404).json({ success: false, message: 'Délégué non trouvé' });
         }
+
+        const resultats = await Delegue.findByPk(req.params.id);
 
         notify({
             title: "Succès",
-            message: `Délégué ${resultats[1][0].nom} ${resultats[1][0].prenom} a été supprimé avec succès.`,
+            message: `Délégué ${resultats.nom} ${resultats.prenom} a été supprimé avec succès.`,
             recipient: req.decoded.username,
             type: "success"
         });
 
-        res.status(200).json(resultats[1][0]);
+        res.status(200).json(resultats);
     } catch (error) {
         notify({
             title: "Erreur",
@@ -224,6 +274,7 @@ const deleteUser = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 module.exports = {
     getMyInfos,

@@ -73,7 +73,7 @@ app.use("/api/",cronRoute);
 // auth middleware
 const {verifyToken} = require(__dirname +"/controller/authController");
 app.use((req, res, next)=>{
-    console.log(req.body);
+    console.log(req.body, req.url);
     verifyToken(req, res, next);
 });
 
@@ -124,7 +124,7 @@ cronJob.start();
 process.on('SIGINT', () => {
     console.log('Cron job stopped gracefully.');
     cronJob.stop();
-    mongoose.connection.close();
+    // mongoose.connection.close();
     process.exit();
 });
 
