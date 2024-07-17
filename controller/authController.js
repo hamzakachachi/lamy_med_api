@@ -82,7 +82,14 @@ const verifyToken = async function(req, res, next) {
                     return res.status(500).json({ success: false, message: err.message });
                 }
                 req.decoded = decoded;
-                next();
+                if (next) {
+                    // if everything is good, save to request for use in other routes
+                    req.decoded = decoded;
+                    next();
+                } else {
+                    return res.status(200).send(decoded);
+                }
+                
             });
         } else {
             return res.json({ success: false, message: 'Failed to authenticate token.' });
