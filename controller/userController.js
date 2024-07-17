@@ -14,7 +14,7 @@ const getAllDelegues = async (req, res) => {
             },
             // include: [{
             //     model: Calendrier,
-            //     as: 'calendriers'
+            //     as: 'Calendriers'
             // }],
             attributes: {
                 exclude: ['password'],
@@ -23,7 +23,7 @@ const getAllDelegues = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 0
@@ -33,7 +33,7 @@ const getAllDelegues = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 1
@@ -43,7 +43,7 @@ const getAllDelegues = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 2
@@ -58,6 +58,7 @@ const getAllDelegues = async (req, res) => {
         res.status(200).json(resultats);
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -96,7 +97,7 @@ const addUser = async (req, res) => {
             where: { id: user.id },
             // include: [{
             //     model: Calendrier,
-            //     as: 'calendriers'
+            //     as: 'Calendriers'
             // }],
             attributes: {
                 exclude: ['password'],
@@ -105,7 +106,7 @@ const addUser = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 0
@@ -115,7 +116,7 @@ const addUser = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 1
@@ -125,7 +126,7 @@ const addUser = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 2
@@ -183,7 +184,7 @@ const updateUser = async (req, res) => {
             where: { id: req.params.id },
             // include: [{
             //     model: Calendrier,
-            //     as: 'calendriers'
+            //     as: 'Calendriers'
             // }],
             attributes: {
                 exclude: ['password'],
@@ -192,7 +193,7 @@ const updateUser = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 0
@@ -202,7 +203,7 @@ const updateUser = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 1
@@ -212,7 +213,7 @@ const updateUser = async (req, res) => {
                     [
                         Sequelize.literal(`(
                             SELECT COUNT(*)
-                            FROM calendriers AS calendrier
+                            FROM Calendriers AS calendrier
                             WHERE calendrier.delegue = Delegue.id
                             AND calendrier.deleted = false
                             AND calendrier.status = 2
