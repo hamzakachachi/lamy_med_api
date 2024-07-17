@@ -15,6 +15,30 @@ const delegues = [
     status: "active"
   },
   {
+    id: "5",
+    nom: "lamy",
+    prenom: "med",
+    username: "lamy_med_admin",
+    password: "$2a$10$twKRk23pvigPqaX.OycRIe.jFFcsUSgn8CNviDs.B5iHBXRiB3oua",
+    createdAt: "2023-12-24T02:25:30.000Z",
+    updatedAt: "2023-12-24T02:25:30.000Z",
+    lastActivities: null,
+    status: "active",
+    role:"admin"
+  },
+  {
+    id: "4",
+    nom: "KACHACHI",
+    prenom: "HAMZA",
+    username: "hamza_kachachi",
+    password: "$2a$10$twKRk23pvigPqaX.OycRIe.jFFcsUSgn8CNviDs.B5iHBXRiB3oua",
+    createdAt: "2023-12-24T02:25:30.000Z",
+    updatedAt: "2023-12-24T02:25:30.000Z",
+    lastActivities: null,
+    status: "active",
+    role:"admin"
+  },
+  {
     id: "2",
     nom: "Johnson",
     prenom: "Jane",
