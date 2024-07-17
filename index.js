@@ -133,5 +133,5 @@ process.on('SIGINT', () => {
 connectDB();
 
 // ===========================
-const install = require(__dirname +"/routes/install");
+// const install = require(__dirname +"/routes/install");
 // ==========================================
