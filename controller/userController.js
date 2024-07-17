@@ -138,7 +138,7 @@ const addUser = async (req, res) => {
 
         notify({
             title: "Succès",
-            message: `Délégué ${resultats.nom} ${resultats.prenom} a été ajouté avec succès.`,
+            message: `Délégué ${rep.nom} ${rep.prenom} a été ajouté avec succès.`,
             recipient: req.decoded.username,
             type: "success"
         });
@@ -151,6 +151,7 @@ const addUser = async (req, res) => {
             recipient: req.decoded.username,
             type: "error"
         });
+        console.log(error);
         res.status(500).json({ success: false, message: error.message });
     }
 
